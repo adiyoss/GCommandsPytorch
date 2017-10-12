@@ -1,6 +1,5 @@
 from gcommand_loader import GCommandLoader
 import torch
-import torchvision.transforms as transforms
 
 dataset = GCommandLoader('gcommands/test')
 

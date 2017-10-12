@@ -7,10 +7,10 @@ import torch
 import librosa
 import numpy as np
 
-
 AUDIO_EXTENSIONS = [
     '.wav', '.WAV',
 ]
+
 
 def is_audio_file(filename):
     return any(filename.endswith(extension) for extension in AUDIO_EXTENSIONS)
@@ -49,7 +49,7 @@ def spect_loader(path, window_size, window_stride, window, normalize):
 
     # STFT
     D = librosa.stft(y, n_fft=n_fft, hop_length=hop_length,
-                         win_length=win_length, window=window)
+                     win_length=win_length, window=window)
     spect, phase = librosa.magphase(D)
 
     # S = log(S+1)
@@ -100,8 +100,9 @@ class GCommandLoader(data.Dataset):
         classes, class_to_idx = find_classes(root)
         spects = make_dataset(root, class_to_idx)
         if len(spects) == 0:
-            raise(RuntimeError("Found 0 sound files in subfolders of: " + root + "\n"
-                               "Supported audio file extensions are: " + ",".join(AUDIO_EXTENSIONS)))
+            raise (RuntimeError("Found 0 sound files in subfolders of: " + root + "\n"
+                                                                                  "Supported audio file extensions are: " + ",".join(
+                AUDIO_EXTENSIONS)))
 
         self.root = root
         self.spects = spects

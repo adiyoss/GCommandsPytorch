@@ -43,7 +43,6 @@ def make_dataset(gcommands_fold, out_path):
     if not os.path.exists(train_fold):
         os.mkdir(train_fold)
 
-
     move_files(gcommands_fold, test_fold, test_path)
     move_files(gcommands_fold, valid_fold, validation_path)
     create_train_fold(gcommands_fold, train_fold, test_fold)
@@ -51,8 +50,7 @@ def make_dataset(gcommands_fold, out_path):
 
 parser = argparse.ArgumentParser(description='Make google commands dataset.')
 parser.add_argument('gcommads_fold', help='the path to the root folder of te google commands dataset.')
-parser.add_argument('--out_path', default='gcommands' ,help='the path where to save the files splitted to folders.')
-
+parser.add_argument('--out_path', default='gcommands', help='the path where to save the files splitted to folders.')
 
 if __name__ == '__main__':
     args = parser.parse_args()
