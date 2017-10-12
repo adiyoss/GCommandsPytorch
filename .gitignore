@@ -5,3 +5,4 @@ gcommands/
 speech_commands_v0.01/
 *.tar.gz
 __pycache__/
+*.pyc

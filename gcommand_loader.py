@@ -63,9 +63,10 @@ def spect_loader(path, window_size, window_stride, window, normalize):
     # z-score normalization
     if normalize:
         mean = spect.mean()
-        std = spect.std()
-        spect.add_(-mean)
-        spect.div_(std)
+        std = spect.std()        
+        if std != 0:
+            spect.add_(-mean)
+            spect.div_(std)
 
     return spect
 
@@ -100,9 +101,7 @@ class GCommandLoader(data.Dataset):
         classes, class_to_idx = find_classes(root)
         spects = make_dataset(root, class_to_idx)
         if len(spects) == 0:
-            raise (RuntimeError("Found 0 sound files in subfolders of: " + root + "\n"
-                                                                                  "Supported audio file extensions are: " + ",".join(
-                AUDIO_EXTENSIONS)))
+            raise (RuntimeError("Found 0 sound files in subfolders of: " + root + "Supported audio file extensions are: " + ",".join(AUDIO_EXTENSIONS)))
 
         self.root = root
         self.spects = spects
