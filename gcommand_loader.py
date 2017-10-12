@@ -1,4 +1,3 @@
-import torch
 import torch.utils.data as data
 
 import os
@@ -7,7 +6,6 @@ import torch
 
 import librosa
 import numpy as np
-import matplotlib.cm as cm
 
 
 AUDIO_EXTENSIONS = [
@@ -42,10 +40,7 @@ def make_dataset(dir, class_to_idx):
     return spects
 
 
-def spect_loader(path):
-    window_size = .02
-    window_stride = .01
-    window = 'hamming'
+def spect_loader(path, window_size, window_stride, window, normalize):
     y, sr = librosa.load(path, sr=None)
     # n_fft = 4096
     n_fft = int(sr * window_size)
@@ -59,20 +54,24 @@ def spect_loader(path):
 
     # S = log(S+1)
     spect = np.log1p(spect)
-    if spect.shape[1] < 101:
+    if spect.shape[1] < 101:  # TODO: extract this number automaticly
         pad = np.zeros((spect.shape[0], 101 - spect.shape[1]))
         spect = np.hstack((spect, pad))
     spect = np.resize(spect, (1, spect.shape[0], spect.shape[1]))
     spect = torch.FloatTensor(spect)
 
-    return spect
+    # z-score normalization
+    if normalize:
+        mean = spect.mean()
+        std = spect.std()
+        spect.add_(-mean)
+        spect.div_(std)
 
-def default_loader(path):
-    return spect_loader(path)
+    return spect
 
 
 class GCommandLoader(data.Dataset):
-    """A google command data loader where the wavs are arranged in this way: ::
+    """A google command data set loader where the wavs are arranged in this way: ::
         root/one/xxx.wav
         root/one/xxy.wav
         root/one/xxz.wav
@@ -85,15 +84,19 @@ class GCommandLoader(data.Dataset):
             and returns a transformed version. E.g, ``transforms.RandomCrop``
         target_transform (callable, optional): A function/transform that takes in the
             target and transforms it.
-        loader (callable, optional): A function to load an image given its path.
+        window_size: window size for the stft, default value is .02
+        window_stride: window stride for the stft, default value is .01
+        window_type: typye of window to extract the stft, default value is 'hamming'
+        normalize: boolean, wheather or not to normalize the spect to have zero mean and one std
      Attributes:
         classes (list): List of the class names.
         class_to_idx (dict): Dict with items (class_name, class_index).
         spects (list): List of (spects path, class_index) tuples
+        STFT parameter: window_size, window_stride, window_type, normalize
     """
 
-    def __init__(self, root, transform=None, target_transform=None,
-                 loader=default_loader):
+    def __init__(self, root, transform=None, target_transform=None, window_size=.02,
+                 window_stride=.01, window_type='hamming', normalize=True):
         classes, class_to_idx = find_classes(root)
         spects = make_dataset(root, class_to_idx)
         if len(spects) == 0:
@@ -106,7 +109,11 @@ class GCommandLoader(data.Dataset):
         self.class_to_idx = class_to_idx
         self.transform = transform
         self.target_transform = target_transform
-        self.loader = loader
+        self.loader = spect_loader
+        self.window_size = window_size
+        self.window_stride = window_stride
+        self.window_type = window_type
+        self.normalize = normalize
 
     def __getitem__(self, index):
         """
@@ -116,7 +123,7 @@ class GCommandLoader(data.Dataset):
             tuple: (spect, target) where target is class_index of the target class.
         """
         path, target = self.spects[index]
-        spect = self.loader(path)
+        spect = self.loader(path, self.window_size, self.window_stride, self.window_type, self.normalize)
         if self.transform is not None:
             spect = self.transform(spect)
         if self.target_transform is not None:
