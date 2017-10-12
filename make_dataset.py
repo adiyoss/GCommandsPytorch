@@ -1,22 +1,6 @@
 import os
 import shutil
-
-validation_path = 'data/validation_list.txt'
-test_path = 'data/testing_list.txt'
-parent_dir = 'gcommands'
-original_fold = 'data'
-valid_fold = os.path.join(parent_dir, 'valid')
-test_fold = os.path.join(parent_dir, 'test')
-train_fold = os.path.join(parent_dir, 'train')
-
-if not os.path.exists(parent_dir):
-    os.mkdir(parent_dir)
-if not os.path.exists(valid_fold):
-    os.mkdir(valid_fold)
-if not os.path.exists(test_fold):
-    os.mkdir(test_fold)
-if not os.path.exists(train_fold):
-    os.mkdir(train_fold)
+import argparse
 
 
 def move_files(original_fold, data_fold, data_filename):
@@ -42,8 +26,34 @@ def create_train_fold(original_fold, data_fold, test_fold):
             shutil.move(os.path.join(original_fold, file), os.path.join(data_fold, file))
 
 
-move_files(original_fold, test_fold, test_path)
-move_files(original_fold, valid_fold, validation_path)
-create_train_fold(original_fold, train_fold, test_fold)
+def make_dataset(gcommands_fold, out_path):
+    validation_path = os.path.join(gcommands_fold, 'validation_list.txt')
+    test_path = os.path.join(gcommands_fold, 'testing_list.txt')
+
+    valid_fold = os.path.join(out_path, 'valid')
+    test_fold = os.path.join(out_path, 'test')
+    train_fold = os.path.join(out_path, 'train')
+
+    if not os.path.exists(out_path):
+        os.mkdir(out_path)
+    if not os.path.exists(valid_fold):
+        os.mkdir(valid_fold)
+    if not os.path.exists(test_fold):
+        os.mkdir(test_fold)
+    if not os.path.exists(train_fold):
+        os.mkdir(train_fold)
 
 
+    move_files(gcommands_fold, test_fold, test_path)
+    move_files(gcommands_fold, valid_fold, validation_path)
+    create_train_fold(gcommands_fold, train_fold, test_fold)
+
+
+parser = argparse.ArgumentParser(description='Make google commands dataset.')
+parser.add_argument('gcommads_fold', help='the path to the root folder of te google commands dataset.')
+parser.add_argument('--out_path', default='gcommands' ,help='the path where to save the files splitted to folders.')
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    make_dataset(args.gcommads_fold, args.out_path)

@@ -1,2 +1,6 @@
+.DS_Store
+.idea/
 data/
 gcommands/
+*.tar.gz
+__pycache__/
