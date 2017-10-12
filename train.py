@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torchvision import datasets, transforms
 from torch.autograd import Variable
 from gcommand_loader import GCommandLoader
 
@@ -19,30 +20,33 @@ parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                     help='SGD momentum (default: 0.5)')
-parser.add_argument('--cuda', action='store_true', default=True,
-                    help='use CUDA')
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                    help='disables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
-args.cuda = args.cuda and torch.cuda.is_available()
+args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
+
+kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+
 train_dataset = GCommandLoader('gcommands/train')
 
 train_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=100, shuffle=True,
-    num_workers=20, pin_memory=True, sampler=None)
+        train_dataset, batch_size=100, shuffle=True,
+        num_workers=20, pin_memory=True, sampler=None)
 
 test_dataset = GCommandLoader('gcommands/test')
 
 test_loader = torch.utils.data.DataLoader(
-    test_dataset, batch_size=100, shuffle=None,
-    num_workers=20, pin_memory=True, sampler=None)
+        test_dataset, batch_size=100, shuffle=None,
+        num_workers=20, pin_memory=True, sampler=None)
 
 
 class Net(nn.Module):
@@ -56,20 +60,18 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))        
         x = x.view(-1, 16280)
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x)
 
-
 model = Net()
 if args.cuda:
     model.cuda()
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
-
 
 def train(epoch):
     model.train()
@@ -85,8 +87,7 @@ def train(epoch):
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), loss.data[0]))
-
+                100. * batch_idx / len(train_loader), loss.data[0]))
 
 def test():
     model.eval()
@@ -97,8 +98,8 @@ def test():
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)
         output = model(data)
-        test_loss += F.nll_loss(output, target, size_average=False).data[0]  # sum up batch loss
-        pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+        test_loss += F.nll_loss(output, target, size_average=False).data[0] # sum up batch loss
+        pred = output.data.max(1, keepdim=True)[1] # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     test_loss /= len(test_loader.dataset)
