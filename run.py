@@ -15,15 +15,17 @@ parser.add_argument('--test_path', default='gcommands/test', help='path to the t
 parser.add_argument('--valid_path', default='gcommands/valid', help='path to the valid data folder')
 parser.add_argument('--batch_size', type=int, default=100, metavar='N', help='training and valid batch size')
 parser.add_argument('--test_batch_size', type=int, default=100, metavar='N', help='batch size for testing')
-parser.add_argument('--arc', default='VGG11', help='network architecture: LeNet, VGG11, VGG13, VGG16, VGG19')
+parser.add_argument('--arc', default='LeNet', help='network architecture: LeNet, VGG11, VGG13, VGG16, VGG19')
 parser.add_argument('--epochs', type=int, default=10, metavar='N', help='number of epochs to train')
 parser.add_argument('--lr', type=float, default=0.001, metavar='LR', help='learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, metavar='M', help='SGD momentum, for SGD only')
 parser.add_argument('--optimizer', default='adam', help='optimization method: sgd | adam')
 parser.add_argument('--cuda', default=True, help='enable CUDA')
 parser.add_argument('--seed', type=int, default=1234, metavar='S', help='random seed')
-parser.add_argument('--log-interval', type=int, default=10, metavar='N', help='how many batches to wait before logging training status')
-parser.add_argument('--patience', type=int, default=5, metavar='N', help='how many epochs of no loss improvement should we wait before stop training')
+parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+                    help='how many batches to wait before logging training status')
+parser.add_argument('--patience', type=int, default=5, metavar='N',
+                    help='how many epochs of no loss improvement should we wait before stop training')
 # feature extraction options
 parser.add_argument('--window_size', default=.02, help='window size for the stft')
 parser.add_argument('--window_stride', default=.01, help='window stride for the stft')
@@ -38,26 +40,23 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 # loading data
-train_dataset = GCommandLoader(args.train_path)
+train_dataset = GCommandLoader(args.train_path, window_size=args.window_size, window_stride=args.window_stride,
+                               window_type=args.window_type, normalize=args.normalize)
 train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True,
-        num_workers=20, pin_memory=args.cuda, sampler=None,
-        window_size=args.window_size, window_stride=args.window_stride,
-        window_type=args.window_type, normalize=args.normalize)
+    train_dataset, batch_size=args.batch_size, shuffle=True,
+    num_workers=20, pin_memory=args.cuda, sampler=None)
 
-valid_dataset = GCommandLoader(args.valid_path)
+valid_dataset = GCommandLoader(args.valid_path, window_size=args.window_size, window_stride=args.window_stride,
+                               window_type=args.window_type, normalize=args.normalize)
 valid_loader = torch.utils.data.DataLoader(
-        valid_dataset, batch_size=args.batch_size, shuffle=None,
-        num_workers=20, pin_memory=args.cuda, sampler=None,
-        window_size=args.window_size, window_stride=args.window_stride,
-        window_type=args.window_type, normalize=args.normalize)
+    valid_dataset, batch_size=args.batch_size, shuffle=None,
+    num_workers=20, pin_memory=args.cuda, sampler=None)
 
-test_dataset = GCommandLoader(args.test_path)
+test_dataset = GCommandLoader(args.test_path, window_size=args.window_size, window_stride=args.window_stride,
+                              window_type=args.window_type, normalize=args.normalize)
 test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=args.test_batch_size, shuffle=None,
-        num_workers=20, pin_memory=args.cuda, sampler=None,
-        window_size=args.window_size, window_stride=args.window_stride,
-        window_type=args.window_type, normalize=args.normalize)
+    test_dataset, batch_size=args.test_batch_size, shuffle=None,
+    num_workers=20, pin_memory=args.cuda, sampler=None)
 
 # build model
 if args.arc == 'LeNet':
