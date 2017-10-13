@@ -20,10 +20,16 @@ parser.add_argument('--epochs', type=int, default=10, metavar='N', help='number 
 parser.add_argument('--lr', type=float, default=0.001, metavar='LR', help='learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, metavar='M', help='SGD momentum, for SGD only')
 parser.add_argument('--optimizer', default='adam', help='optimization method: sgd | adam')
-parser.add_argument('--cuda', default=False, help='enable CUDA')
+parser.add_argument('--cuda', default=True, help='enable CUDA')
 parser.add_argument('--seed', type=int, default=1234, metavar='S', help='random seed')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N', help='how many batches to wait before logging training status')
 parser.add_argument('--patience', type=int, default=5, metavar='N', help='how many epochs of no loss improvement should we wait before stop training')
+# feature extraction options
+parser.add_argument('--window_size', default=.02, help='window size for the stft')
+parser.add_argument('--window_stride', default=.01, help='window stride for the stft')
+parser.add_argument('--window_type', default='hamming', help='window type for the stft')
+parser.add_argument('--normalize', default=True, help='boolean, wheather or not to normalize the spect')
+
 args = parser.parse_args()
 
 args.cuda = args.cuda and torch.cuda.is_available()
@@ -35,17 +41,23 @@ if args.cuda:
 train_dataset = GCommandLoader(args.train_path)
 train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,
-        num_workers=20, pin_memory=args.cuda, sampler=None)
+        num_workers=20, pin_memory=args.cuda, sampler=None,
+        window_size=args.window_size, window_stride=args.window_stride,
+        window_type=args.window_type, normalize=args.normalize)
 
 valid_dataset = GCommandLoader(args.valid_path)
 valid_loader = torch.utils.data.DataLoader(
         valid_dataset, batch_size=args.batch_size, shuffle=None,
-        num_workers=20, pin_memory=args.cuda, sampler=None)
+        num_workers=20, pin_memory=args.cuda, sampler=None,
+        window_size=args.window_size, window_stride=args.window_stride,
+        window_type=args.window_type, normalize=args.normalize)
 
 test_dataset = GCommandLoader(args.test_path)
 test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=args.test_batch_size, shuffle=None,
-        num_workers=20, pin_memory=args.cuda, sampler=None)
+        num_workers=20, pin_memory=args.cuda, sampler=None,
+        window_size=args.window_size, window_stride=args.window_stride,
+        window_type=args.window_type, normalize=args.normalize)
 
 # build model
 if args.arc == 'LeNet':
@@ -71,12 +83,14 @@ best_valid_loss = np.inf
 iteration = 0
 epoch = 1
 
+# trainint with early stopping
 while (epoch < args.epochs + 1) and (iteration < args.patience):
     train(train_loader, model, optimizer, epoch, args.cuda, args.log_interval)
     valid_loss = test(test_loader, model, args.cuda)
     if valid_loss > best_valid_loss:
         iteration += 1
     else:
+        iteration = 0
         state = {
             'net': model.module if args.cuda else model,
             'acc': valid_loss,
@@ -86,4 +100,5 @@ while (epoch < args.epochs + 1) and (iteration < args.patience):
             os.mkdir('checkpoint')
         torch.save(state, './checkpoint/ckpt.t7')
 
+# test model
 test(test_loader, model, args.cuda)
