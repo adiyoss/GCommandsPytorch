@@ -40,7 +40,7 @@ def make_dataset(dir, class_to_idx):
     return spects
 
 
-def spect_loader(path, window_size, window_stride, window, normalize):
+def spect_loader(path, window_size, window_stride, window, normalize, max_len=101):
     y, sr = librosa.load(path, sr=None)
     # n_fft = 4096
     n_fft = int(sr * window_size)
@@ -54,9 +54,14 @@ def spect_loader(path, window_size, window_stride, window, normalize):
 
     # S = log(S+1)
     spect = np.log1p(spect)
-    if spect.shape[1] < 101:  # TODO: extract this number automaticly
-        pad = np.zeros((spect.shape[0], 101 - spect.shape[1]))
+
+    # make all spects with the same dims
+    # TODO: change that in the future
+    if spect.shape[1] < max_len:
+        pad = np.zeros((spect.shape[0], max_len - spect.shape[1]))
         spect = np.hstack((spect, pad))
+    elif spect.shape[1] > max_len:
+        spect = spect[:max_len, ]
     spect = np.resize(spect, (1, spect.shape[0], spect.shape[1]))
     spect = torch.FloatTensor(spect)
 
@@ -88,7 +93,8 @@ class GCommandLoader(data.Dataset):
         window_size: window size for the stft, default value is .02
         window_stride: window stride for the stft, default value is .01
         window_type: typye of window to extract the stft, default value is 'hamming'
-        normalize: boolean, wheather or not to normalize the spect to have zero mean and one std
+        normalize: boolean, whether or not to normalize the spect to have zero mean and one std
+        max_len: the maximum length of frames to use
      Attributes:
         classes (list): List of the class names.
         class_to_idx (dict): Dict with items (class_name, class_index).
@@ -97,7 +103,7 @@ class GCommandLoader(data.Dataset):
     """
 
     def __init__(self, root, transform=None, target_transform=None, window_size=.02,
-                 window_stride=.01, window_type='hamming', normalize=True):
+                 window_stride=.01, window_type='hamming', normalize=True, max_len=101):
         classes, class_to_idx = find_classes(root)
         spects = make_dataset(root, class_to_idx)
         if len(spects) == 0:
@@ -114,6 +120,7 @@ class GCommandLoader(data.Dataset):
         self.window_stride = window_stride
         self.window_type = window_type
         self.normalize = normalize
+        self.max_len = max_len
 
     def __getitem__(self, index):
         """
@@ -123,7 +130,7 @@ class GCommandLoader(data.Dataset):
             tuple: (spect, target) where target is class_index of the target class.
         """
         path, target = self.spects[index]
-        spect = self.loader(path, self.window_size, self.window_stride, self.window_type, self.normalize)
+        spect = self.loader(path, self.window_size, self.window_stride, self.window_type, self.normalize, self.max_len)
         if self.transform is not None:
             spect = self.transform(spect)
         if self.target_transform is not None:
