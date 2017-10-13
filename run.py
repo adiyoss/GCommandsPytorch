@@ -9,7 +9,7 @@ from train import train, test
 import os
 
 # Training settings
-parser = argparse.ArgumentParser(description='ConvNets for Audio Recognition Example')
+parser = argparse.ArgumentParser(description='ConvNets for Speech Commands Recognition')
 parser.add_argument('--train_path', default='gcommands/train', help='path to the train data folder')
 parser.add_argument('--test_path', default='gcommands/test', help='path to the test data folder')
 parser.add_argument('--valid_path', default='gcommands/valid', help='path to the valid data folder')

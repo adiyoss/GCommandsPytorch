@@ -1,4 +1,4 @@
-# ConvNets for Audio Recognition
+# ConvNets for Speech Commands Recognition
 
 Training ConvNet models using [Google Commands Dataset](https://research.googleblog.com/2017/08/launching-speech-commands-dataset.html), implemented in [PyTorch](http://pytorch.org).
 <!-- This repo contains data loader for the [Google Commands Dataset](https://research.googleblog.com/2017/08/launching-speech-commands-dataset.html), as well as training scripts for several ConvNet models, written in [PyTorch](http://pytorch.org). -->
