@@ -63,7 +63,7 @@ def spect_loader(path, window_size, window_stride, window, normalize):
     # z-score normalization
     if normalize:
         mean = spect.mean()
-        std = spect.std()        
+        std = spect.std()
         if std != 0:
             spect.add_(-mean)
             spect.div_(std)
