@@ -67,8 +67,8 @@ else:
     model = LeNet()
 
 if args.cuda:
-    print('Using CUDA with {0}'.format(torch.cuda.device_count()))
-    torch.nn.DataParallel(model).cuda()
+    print('Using CUDA with {0} GPUs'.format(torch.cuda.device_count()))
+    model = torch.nn.DataParallel(model).cuda()
 
 # define optimizer
 if args.optimizer.lower() == 'adam':
@@ -82,14 +82,18 @@ best_valid_loss = np.inf
 iteration = 0
 epoch = 1
 
+
 # trainint with early stopping
 while (epoch < args.epochs + 1) and (iteration < args.patience):
     train(train_loader, model, optimizer, epoch, args.cuda, args.log_interval)
-    valid_loss = test(test_loader, model, args.cuda)
+    valid_loss = test(valid_loader, model, args.cuda)
     if valid_loss > best_valid_loss:
+        print('Loss was not improved, iteration {0}'.formant(iteration))
         iteration += 1
     else:
+        print('Saving model...')
         iteration = 0
+        best_valid_loss = valid_loss
         state = {
             'net': model.module if args.cuda else model,
             'acc': valid_loss,

@@ -3,6 +3,7 @@
 data/
 gcommands/
 speech_commands_v0.01/
+checkpoint/
 *.tar.gz
 __pycache__/
 *.pyc
