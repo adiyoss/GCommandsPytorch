@@ -102,6 +102,7 @@ while (epoch < args.epochs + 1) and (iteration < args.patience):
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
         torch.save(state, './checkpoint/ckpt.t7')
+    epoch += 1
 
 # test model
 test(test_loader, model, args.cuda)
