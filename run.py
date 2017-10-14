@@ -16,7 +16,7 @@ parser.add_argument('--valid_path', default='gcommands/valid', help='path to the
 parser.add_argument('--batch_size', type=int, default=100, metavar='N', help='training and valid batch size')
 parser.add_argument('--test_batch_size', type=int, default=100, metavar='N', help='batch size for testing')
 parser.add_argument('--arc', default='LeNet', help='network architecture: LeNet, VGG11, VGG13, VGG16, VGG19')
-parser.add_argument('--epochs', type=int, default=10, metavar='N', help='number of epochs to train')
+parser.add_argument('--epochs', type=int, default=100, metavar='N', help='number of epochs to train')
 parser.add_argument('--lr', type=float, default=0.001, metavar='LR', help='learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, metavar='M', help='SGD momentum, for SGD only')
 parser.add_argument('--optimizer', default='adam', help='optimization method: sgd | adam')
@@ -88,8 +88,8 @@ while (epoch < args.epochs + 1) and (iteration < args.patience):
     train(train_loader, model, optimizer, epoch, args.cuda, args.log_interval)
     valid_loss = test(valid_loader, model, args.cuda)
     if valid_loss > best_valid_loss:
-        print('Loss was not improved, iteration {0}'.format(str(iteration)))
         iteration += 1
+        print('Loss was not improved, iteration {0}'.format(str(iteration)))
     else:
         print('Saving model...')
         iteration = 0
