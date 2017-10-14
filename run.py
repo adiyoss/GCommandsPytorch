@@ -88,7 +88,7 @@ while (epoch < args.epochs + 1) and (iteration < args.patience):
     train(train_loader, model, optimizer, epoch, args.cuda, args.log_interval)
     valid_loss = test(valid_loader, model, args.cuda)
     if valid_loss > best_valid_loss:
-        print('Loss was not improved, iteration {0}'.formant(iteration))
+        print('Loss was not improved, iteration {0}'.formant(str(iteration)))
         iteration += 1
     else:
         print('Saving model...')
