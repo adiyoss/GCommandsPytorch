@@ -45,6 +45,7 @@ python run.py --train_path <train_data_path> --valid_path <valid_data_path> --te
 
 ### Results
 Accuracy results for the train, validation and test sets using two ConvNet models (LeNet5 and VGG11). 
+
 In order to reproduce the below results just exec the run.py file with default parameters.
 Results may be improved using deeper models (VGG13, VGG19), or better hyper-parameters optimization.
 
