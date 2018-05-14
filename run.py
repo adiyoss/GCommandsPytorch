@@ -8,29 +8,47 @@ from model import LeNet, VGG
 from train import train, test
 import os
 
+
 # Training settings
-parser = argparse.ArgumentParser(description='ConvNets for Speech Commands Recognition')
-parser.add_argument('--train_path', default='gcommands/train', help='path to the train data folder')
-parser.add_argument('--test_path', default='gcommands/test', help='path to the test data folder')
-parser.add_argument('--valid_path', default='gcommands/valid', help='path to the valid data folder')
-parser.add_argument('--batch_size', type=int, default=100, metavar='N', help='training and valid batch size')
-parser.add_argument('--test_batch_size', type=int, default=100, metavar='N', help='batch size for testing')
-parser.add_argument('--arc', default='LeNet', help='network architecture: LeNet, VGG11, VGG13, VGG16, VGG19')
-parser.add_argument('--epochs', type=int, default=100, metavar='N', help='number of epochs to train')
-parser.add_argument('--lr', type=float, default=0.001, metavar='LR', help='learning rate')
-parser.add_argument('--momentum', type=float, default=0.9, metavar='M', help='SGD momentum, for SGD only')
-parser.add_argument('--optimizer', default='adam', help='optimization method: sgd | adam')
+parser = argparse.ArgumentParser(
+    description='ConvNets for Speech Commands Recognition')
+parser.add_argument('--train_path', default='gcommands/train',
+                    help='path to the train data folder')
+parser.add_argument('--test_path', default='gcommands/test',
+                    help='path to the test data folder')
+parser.add_argument('--valid_path', default='gcommands/valid',
+                    help='path to the valid data folder')
+parser.add_argument('--batch_size', type=int, default=100,
+                    metavar='N', help='training and valid batch size')
+parser.add_argument('--test_batch_size', type=int, default=100,
+                    metavar='N', help='batch size for testing')
+parser.add_argument('--arc', default='LeNet',
+                    help='network architecture: LeNet, VGG11, VGG13, VGG16, VGG19')
+parser.add_argument('--epochs', type=int, default=100,
+                    metavar='N', help='number of epochs to train')
+parser.add_argument('--lr', type=float, default=0.001,
+                    metavar='LR', help='learning rate')
+parser.add_argument('--momentum', type=float, default=0.9,
+                    metavar='M', help='SGD momentum, for SGD only')
+parser.add_argument('--optimizer', default='adam',
+                    help='optimization method: sgd | adam')
 parser.add_argument('--cuda', default=True, help='enable CUDA')
-parser.add_argument('--seed', type=int, default=1234, metavar='S', help='random seed')
+parser.add_argument('--seed', type=int, default=1234,
+                    metavar='S', help='random seed')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
-                    help='how many batches to wait before logging training status')
+                    help='num of batches to wait until logging train status')
 parser.add_argument('--patience', type=int, default=5, metavar='N',
                     help='how many epochs of no loss improvement should we wait before stop training')
+
 # feature extraction options
-parser.add_argument('--window_size', default=.02, help='window size for the stft')
-parser.add_argument('--window_stride', default=.01, help='window stride for the stft')
-parser.add_argument('--window_type', default='hamming', help='window type for the stft')
-parser.add_argument('--normalize', default=True, help='boolean, wheather or not to normalize the spect')
+parser.add_argument('--window_size', default=.02,
+                    help='window size for the stft')
+parser.add_argument('--window_stride', default=.01,
+                    help='window stride for the stft')
+parser.add_argument('--window_type', default='hamming',
+                    help='window type for the stft')
+parser.add_argument('--normalize', default=True,
+                    help='boolean, wheather or not to normalize the spect')
 
 args = parser.parse_args()
 
@@ -74,9 +92,11 @@ if args.cuda:
 if args.optimizer.lower() == 'adam':
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 elif args.optimizer.lower() == 'sgd':
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr,
+                          momentum=args.momentum)
 else:
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr,
+                          momentum=args.momentum)
 
 best_valid_loss = np.inf
 iteration = 0
