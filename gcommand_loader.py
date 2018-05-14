@@ -1,11 +1,10 @@
-import torch.utils.data as data
-
 import os
 import os.path
-import torch
 
 import librosa
 import numpy as np
+import torch
+import torch.utils.data as data
 
 AUDIO_EXTENSIONS = [
     '.wav', '.WAV',
@@ -61,7 +60,7 @@ def spect_loader(path, window_size, window_stride, window, normalize, max_len=10
         pad = np.zeros((spect.shape[0], max_len - spect.shape[1]))
         spect = np.hstack((spect, pad))
     elif spect.shape[1] > max_len:
-        spect = spect[:max_len, ]
+        spect = spect[:, :max_len]
     spect = np.resize(spect, (1, spect.shape[0], spect.shape[1]))
     spect = torch.FloatTensor(spect)
 
