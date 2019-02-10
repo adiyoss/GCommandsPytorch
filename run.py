@@ -18,11 +18,11 @@ parser.add_argument('--test_path', default='gcommands/test',
                     help='path to the test data folder')
 parser.add_argument('--valid_path', default='gcommands/valid',
                     help='path to the valid data folder')
-parser.add_argument('--batch_size', type=int, default=100,
+parser.add_argument('--batch_size', type=int, default=8,
                     metavar='N', help='training and valid batch size')
-parser.add_argument('--test_batch_size', type=int, default=100,
+parser.add_argument('--test_batch_size', type=int, default=1,
                     metavar='N', help='batch size for testing')
-parser.add_argument('--arc', default='LeNet',
+parser.add_argument('--arc', default='VGG11',
                     help='network architecture: LeNet, VGG11, VGG13, VGG16, VGG19')
 parser.add_argument('--epochs', type=int, default=100,
                     metavar='N', help='number of epochs to train')
@@ -62,19 +62,19 @@ train_dataset = GCommandLoader(args.train_path, window_size=args.window_size, wi
                                window_type=args.window_type, normalize=args.normalize)
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=args.batch_size, shuffle=True,
-    num_workers=20, pin_memory=args.cuda, sampler=None)
+    num_workers=32, pin_memory=args.cuda, sampler=None)
 
 valid_dataset = GCommandLoader(args.valid_path, window_size=args.window_size, window_stride=args.window_stride,
                                window_type=args.window_type, normalize=args.normalize)
 valid_loader = torch.utils.data.DataLoader(
     valid_dataset, batch_size=args.batch_size, shuffle=None,
-    num_workers=20, pin_memory=args.cuda, sampler=None)
+    num_workers=32, pin_memory=args.cuda, sampler=None)
 
 test_dataset = GCommandLoader(args.test_path, window_size=args.window_size, window_stride=args.window_stride,
                               window_type=args.window_type, normalize=args.normalize)
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=args.test_batch_size, shuffle=None,
-    num_workers=20, pin_memory=args.cuda, sampler=None)
+    num_workers=32, pin_memory=args.cuda, sampler=None)
 
 # build model
 if args.arc == 'LeNet':
@@ -83,6 +83,8 @@ elif args.arc.startswith('VGG'):
     model = VGG(args.arc)
 else:
     model = LeNet()
+
+print(model)
 
 if args.cuda:
     print('Using CUDA with {0} GPUs'.format(torch.cuda.device_count()))

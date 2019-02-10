@@ -7,3 +7,4 @@ checkpoint/
 *.tar.gz
 __pycache__/
 *.pyc
+bats_words_yoni/
